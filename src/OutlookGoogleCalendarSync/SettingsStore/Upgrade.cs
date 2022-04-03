@@ -1,10 +1,7 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using log4net;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace OutlookGoogleCalendarSync.SettingsStore {
@@ -12,7 +9,7 @@ namespace OutlookGoogleCalendarSync.SettingsStore {
         private static readonly ILog log = LogManager.GetLogger(typeof(Upgrade));
 
         //OGCS releases that require the settings XML to be upgraded
-        private static Int32 multipleCalendars = Program.VersionToInt("2.9.1.1");
+        private static Int32 multipleCalendars = Program.VersionToInt("2.9.3.0");
 
         private static String settingsVersion;
         private static Int32 settingsVersionNum;
@@ -134,11 +131,24 @@ namespace OutlookGoogleCalendarSync.SettingsStore {
             } finally {
                 if (xml != null) {
                     xml.Root.Sort();
-                    try {
-                        xml.Save(Settings.ConfigFile);
-                    } catch (System.Exception ex) {
-                        OGCSexception.Analyse("Could not save upgraded settings file " + Settings.ConfigFile, ex);
-                        throw ex;
+                    while (true) {
+                        try {
+                            xml.Save(Settings.ConfigFile);
+                            break;
+                        } catch (System.IO.IOException ex) {
+                            log.Fail("Another process has locked file " + Settings.ConfigFile);
+                            if (MessageBox.Show("Another program is using the settings file " + Settings.ConfigFile +
+                                "\r\nPlease close any other instance of OGCS that may be using it.",
+                                "Settings Cannot Be Saved", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation) == DialogResult.Cancel) 
+                            {
+                                log.Warn("User cancelled attempt to save new settings file.");
+                                OGCSexception.Analyse("Could not save upgraded settings file " + Settings.ConfigFile, ex);
+                                throw;
+                            }
+                        } catch (System.Exception ex) {
+                            OGCSexception.Analyse("Could not save upgraded settings file " + Settings.ConfigFile, ex);
+                            throw;
+                        }
                     }
                 }
             }

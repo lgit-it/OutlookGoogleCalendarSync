@@ -1041,7 +1041,7 @@ namespace OutlookGoogleCalendarSync.Forms {
         /// </summary>
         public SettingsStore.Calendar ActiveCalendarProfile { get; internal set; }
 
-        private void ddProfile_SelectedIndexChanged(object sender, EventArgs e) {            
+        private void ddProfile_SelectedIndexChanged(object sender, EventArgs e) {
             foreach (SettingsStore.Calendar cal in Settings.Instance.Calendars) {
                 if (cal._ProfileName == ddProfile.Text) {
                     try {
@@ -2114,7 +2114,7 @@ namespace OutlookGoogleCalendarSync.Forms {
         }
 
         private void pbDonate_Click(object sender, EventArgs e) {
-            Program.Donate();
+            Program.Donate("About");
         }
 
         private void btCheckForUpdate_Click(object sender, EventArgs e) {
